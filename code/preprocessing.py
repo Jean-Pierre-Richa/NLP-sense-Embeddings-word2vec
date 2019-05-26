@@ -46,65 +46,66 @@ def parse_dict(file):
     dict_path.close()
 
 def jsonToDict(json_file):
-    
+
     print("loading json file from %s..."%json_file.split("/")[-1])
-    
+
     with open(json_file) as fDict:
-        
+
         final_dict = json.loads("[" +fDict.read().replace("}{", "},{") +"]")
-    
+
     return final_dict
 
 def load_txt_to_dict(txtPath):
-    
+
     txt_json_exists = os.path.isfile(json_txt)
-    
+
     if txt_json_exists:
         fileinfo = os.stat(json_txt)
         if fileinfo.st_size > 3000000:
             print("mapping file already converted into a dict")
     else:
         dict_file = open(os.path.join(root_dir, json_txt), 'w')
-        
+
         print("loading textfile from %s..."%txtPath.split("/")[-1])
-        
+
         txt_dict = {}
         with open(txtPath) as txtf:
             for line in txtf:
                 key, *value = line.split('\t')
                 txt_dict[key] = value
 
-json.dump(txt_dict, dict_file)
-dict_file.close()
+        json.dump(txt_dict, dict_file)
+        dict_file.close()
 
-print("loading dictionary from %s..."%json_txt.split("/")[-1])
-with open(json_txt) as txtdict:
-    dicttxt = json.load(txtdict)
-    
+    print("loading dictionary from %s..."%json_txt.split("/")[-1])
+    with open(json_txt) as txtdict:
+        dicttxt = json.load(txtdict)
+
     return dicttxt
 
 def create_dataset(dictPath):
-    
+
     exists = os.path.isfile(json_dict)
     if exists:
         fileinfo = os.stat(json_dict)
-        if fileinfo.st_size > 95000000:
+        if fileinfo.st_size > 9500000:
             print("Annotations dict already exists")
     else:
         parse_dict(senseXml)
-    
+
     dictionary = jsonToDict(dictPath)
     dicttxt = load_txt_to_dict(txt_dir)
 
-lists_list = []
-with tqdm(desc="lemma_synset_lists", total=len(dictionary)) as pbar:
-    for index in range(len(dictionary)):
-        pbar.update(1)
-        for key in dictionary[index]:
-            if key == "text":
-                txt = (str(dictionary[index][key])).lower()
-                txt = re.sub(r"[,@\'?\.$%\d:_]", " ", txt, flags=re.I)
-                txt = txt.split()
+    lists_list = []
+    with tqdm(desc="lemma_synset_lists", total=len(dictionary)) as pbar:
+        for index in range(len(dictionary)):
+            pbar.update(1)
+            for key in dictionary[index]:
+                if key == "text":
+                    txt = (str(dictionary[index][key])).lower()
+                    # txt = re.sub(r"[,@\'?\.$%\d:_/;-()]", " ", txt, flags=re.I)
+                    txt = re.sub("[^a-zA-Z]+", " ", txt)
+                    txt = txt.split()
                 if key == "annotations":
                     for x in dictionary[index][key]:
                         for y, w in dictionary[index][key][x].items():
@@ -131,5 +132,5 @@ with tqdm(desc="lemma_synset_lists", total=len(dictionary)) as pbar:
                 else:
                     continue
             lists_list.append(txt)
-    # print(lists_list[:100])
-return lists_list
+        # print(lists_list[:100])
+    return lists_list

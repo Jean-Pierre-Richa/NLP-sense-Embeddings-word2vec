@@ -11,6 +11,7 @@ import config
 from tqdm import tqdm
 from gensim.models.callbacks import CallbackAny2Vec
 
+
 json_dict = config.json_dict
 
 class TqdmEpochLogger(CallbackAny2Vec):
@@ -38,6 +39,7 @@ def run_training(train_list):
                          workers=cores-1,
                          callbacks = [progress_bar])
     t = time()
+
     w2v_model.build_vocab(train_list, progress_per=10000)
 
     print('Time to build vocab: {} mins'.format(round((time() - t) / 60, 2)))
@@ -48,11 +50,11 @@ def run_training(train_list):
 
     print('Time to train the model: {} mins'.format(round((time() - t) / 60, 2)))
 
-    w2v_model.wv.save_word2vec_format('model.bin')
+    w2v_model.wv.save_word2vec_format(config.w2v_bin_model_output)
 
-    w2v_model.wv.save_word2vec_format('model.txt', binary=False)
+    w2v_model.wv.save_word2vec_format(config.w2v_model_output, binary=False)
 
-    X = w2v_model[w2v_model.wv.vocab]
+    # X = w2v_model[w2v_model.wv.vocab]
 
     # pca = PCA(n_components=2)
     # result = pca.fit_transform(X)
