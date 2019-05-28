@@ -6,19 +6,17 @@ from tqdm import tqdm
 from nltk.corpus import wordnet as wn
 import config
 
+resources_dir = config.resources_dir
+# cwd = config.cwd
+# root_dir = config.root_dir
+annotation_dict = config.annotation_dict
+# bn2wn_mapping_dict = config.bn2wn_mapping_dict
 
-cwd = config.cwd
-root_dir = config.root_dir
-senseXml = config.senseXml
-json_dict = config.json_dict
-txt_dir = config.txt_dir
-json_txt = config.json_txt
-
-def parse_dict(file):
+def parse_dict(file, aw):
     id = 0
-    dict_path = open(os.path.join(root_dir, json_dict), 'w')
+    dict_path = open(os.path.join(resources_dir, annotation_dict), aw)
     dict = {}
-    print("parsing Xml file...")
+    # print("parsing Xml file...")
     iteration = ET.iterparse(file)
     x, y = iter(iteration).__next__()
     with tqdm(desc="XML->dict", total=len(file)) as pbar:
@@ -55,46 +53,54 @@ def jsonToDict(json_file):
 
     return final_dict
 
-def load_txt_to_dict(txtPath):
+def load_txt_to_dict(bn2wn_mapping_txt):
 
-    txt_json_exists = os.path.isfile(json_txt)
+    bn2wn_mapping_dict = os.path.join(resources_dir, config.bn2wn_mapping_dict)
+    txt_json_exists = os.path.isfile(bn2wn_mapping_dict)
 
     if txt_json_exists:
-        fileinfo = os.stat(json_txt)
+        fileinfo = os.stat(bn2wn_mapping_dict)
+        print(fileinfo.st_size)
         if fileinfo.st_size > 3000000:
             print("mapping file already converted into a dict")
     else:
-        dict_file = open(os.path.join(root_dir, json_txt), 'w')
+        dict_file = open(bn2wn_mapping_dict, 'w')
 
-        print("loading textfile from %s..."%txtPath.split("/")[-1])
+        print("loading textfile from %s..."%bn2wn_mapping_txt.split("/")[-1])
 
         txt_dict = {}
-        with open(txtPath) as txtf:
+        with open(os.path.join(resources_dir, bn2wn_mapping_txt)) as txtf:
             for line in txtf:
-                key, *value = line.split('\t')
-                txt_dict[key] = value
+                # print(line)
 
+                key, *value = line.split('\t')
+                txt_dict[key] = value[0].split('\n')[0]
         json.dump(txt_dict, dict_file)
         dict_file.close()
 
-    print("loading dictionary from %s..."%json_txt.split("/")[-1])
-    with open(json_txt) as txtdict:
-        dicttxt = json.load(txtdict)
+    print("loading dictionary from %s..."%bn2wn_mapping_dict.split("/")[-1])
+    with open(bn2wn_mapping_dict) as txtdict:
+        dict_mapping = json.load(txtdict)
 
-    return dicttxt
+    return dict_mapping
 
-def create_dataset(dictPath):
+def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml, bn2wn_mapping_txt):
 
-    exists = os.path.isfile(json_dict)
+    annotation_dict = os.path.join(resources_dir, config.annotation_dict)
+    exists = os.path.isfile(annotation_dict)
     if exists:
-        fileinfo = os.stat(json_dict)
-        if fileinfo.st_size > 9500000:
+        fileinfo = os.stat(annotation_dict)
+        if fileinfo.st_size > 2100000000:
             print("Annotations dict already exists")
     else:
-        parse_dict(senseXml)
+        print("parsing xml file 1")
+        parse_dict(os.path.join(resources_dir, senseXml1), 'w')
+        if nb_xml == 2:
+            print("parsing xml file 2")
+            parse_dict(os.path.join(resources_dir, senseXml2), 'a')
 
-    dictionary = jsonToDict(dictPath)
-    dicttxt = load_txt_to_dict(txt_dir)
+    dictionary = jsonToDict(annotation_dict)
+    dict_mapping = load_txt_to_dict(bn2wn_mapping_txt)
 
     lists_list = []
     with tqdm(desc="lemma_synset_lists", total=len(dictionary)) as pbar:
@@ -104,24 +110,25 @@ def create_dataset(dictPath):
                 if key == "text":
                     txt = (str(dictionary[index][key])).lower()
                     # txt = re.sub(r"[,@\'?\.$%\d:_/;-()]", " ", txt, flags=re.I)
-                    txt = re.sub("[^a-zA-Z]+", " ", txt)
+                    txt = re.sub("[^a-zA-Z-]+", " ", txt)
                     txt = txt.split()
                 if key == "annotations":
                     for x in dictionary[index][key]:
                         for y, w in dictionary[index][key][x].items():
                             if y == "anchor":
-                                anchor = str(w)
+                                anchor = str(w).lower()
                             if y == "lemma":
-                                lemma = str(w)
+                                lemma = str(w).lower()
                             if y == "babelNet":
                                 try:
-                                    if dicttxt[w]:
+                                    if dict_mapping[w]:
                                         bnsynset = str(w)
-                                        offset = dicttxt[w][0].split("\n")[0]
+                                        offset = dict_mapping[w]
                                         synset = wn.synset_from_pos_and_offset(offset[-1], int(offset[:-1]))
                                         if synset:
                                             record = lemma + "_" + bnsynset
                                             txt = [w.replace(anchor, record) for w in txt]
+                                            print(txt)
                                         else:
                                             print("not in wordnet")
                                             continue
@@ -132,5 +139,9 @@ def create_dataset(dictPath):
                 else:
                     continue
             lists_list.append(txt)
+    print("Saving the final list of annotated text to %s"%config.final_txt.split("/")[-1])
+    with open(os.path.join(resources_dir, config.final_txt), 'w') as finaltxt:
+        json.dump(lists_list, finaltxt)
+
         # print(lists_list[:100])
     return lists_list
