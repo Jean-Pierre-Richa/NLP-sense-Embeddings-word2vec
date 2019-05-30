@@ -108,7 +108,10 @@ def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml,
             pbar.update(1)
             for key in dictionary[index]:
                 if key == "text":
+                    txt_raw = (str(dictionary[index][key])).lower()
+                    # print(txt_raw)
                     txt = (str(dictionary[index][key])).lower()
+                    # print(txt)
                     # txt = re.sub(r"[,@\'?\.$%\d:_/;-()]", " ", txt, flags=re.I)
                     txt = re.sub("[^a-zA-Z-]+", " ", txt)
                     txt = txt.split()
@@ -116,9 +119,15 @@ def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml,
                     for x in dictionary[index][key]:
                         for y, w in dictionary[index][key][x].items():
                             if y == "anchor":
-                                anchor = str(w).lower()
+                                # print(str(txt))
+                                if ((' ' + str(w).lower() + ' ') in txt_raw):
+                                    anchor = str(w).lower()
+                                    # print(anchor)
+                                else:
+                                    continue
                             if y == "lemma":
                                 lemma = str(w).lower()
+                                # print(lemma)
                             if y == "babelNet":
                                 try:
                                     if dict_mapping[w]:
@@ -128,7 +137,7 @@ def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml,
                                         if synset:
                                             record = lemma + "_" + bnsynset
                                             txt = [w.replace(anchor, record) for w in txt]
-                                            print(txt)
+                                            # print(txt)
                                         else:
                                             print("not in wordnet")
                                             continue

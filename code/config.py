@@ -20,6 +20,8 @@ bn2wn_mapping_dict = 'bn2wn_mapping.json'
 tsv_file = "wordsim353/combined.tab"
 # text model output in Wor2Vec format
 w2v_model_output = "modelOutput/model.txt"
+# text best model output in Word2Vec format
+w2v_best_model_output = "modelOutput/best_model.txt"
 # binary model output
 w2v_bin_model_output = "modelOutput/model.bin"
 # the model output dictionary
@@ -27,12 +29,31 @@ w2v_output_json = "modelOutput/model.json"
 # the text containing the list of lists of senses
 final_txt = "modelOutput/final_text.txt"
 
+model_performance = "modelOutput/models_performance.txt"
+
 # Word2Vec gensim parameters
-min_count = 5
+# min_count = 5
+#
+# window    = 5
+#
+# size      = 400
+#
+# sample    = 6e-5
+#
+# alpha     = 0.03
+#
+# min_alpha = 0.0007
+#
+# negative  = 10
+#
+# epochs    = 30
 
-window    = 5
+# Define the grid search parameters
+min_count = [5]
 
-size      = 400
+window = [5]
+
+size = [200, 400]
 
 sample    = 6e-5
 
@@ -40,6 +61,6 @@ alpha     = 0.03
 
 min_alpha = 0.0007
 
-negative  = 10
+negative = [5, 10]
 
-epochs    = 5
+epochs = [20, 30]

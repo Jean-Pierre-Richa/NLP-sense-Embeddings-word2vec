@@ -18,8 +18,8 @@ def parse_args():
 
 
 def load_tsv(gold_file):
-    print(gold_file)
-    print("Loading gold_score file...")
+    # print(gold_file)
+    # print("Loading gold_score file...")
     simlist = []
     with open(gold_file, 'r') as tab_file:
         next(tab_file)
@@ -62,27 +62,15 @@ def model_output_to_dict(resources_dir, model_output, gold_file):
     # print(tab_dict)
     dict_file.close()
 
-    #     for sense in vocab.keys():
-    #         pbar.update(1)
-    #         senselist = []
-    #         word = sense.split('_')[0]
-    #         tab_dict[word] = word
-    #         for k in vocab.keys():
-    #             if k.split('_')[0] == word and k not in tab_dict[word]:
-    #                 senselist.append(k)
-    #         tab_dict[word] = senselist
-    # json.dump(tab_dict, dict_file)
-    # dict_file.close()
-
     return tab_dict
 
 def word_similarity(resources_dir, gold_file, model_output):
 
+    print(os.path.join(resources_dir, model_output))
     model = KeyedVectors.load_word2vec_format(os.path.join(resources_dir, model_output), binary=False)
     similarity_lists = load_tsv(os.path.join(resources_dir, gold_file))
     exists = os.path.isfile(os.path.join(resources_dir, config.w2v_output_json))
     if exists:
-        print("exists")
         with open(os.path.join(resources_dir, config.w2v_output_json)) as sensesdict:
             model_senses = json.load(sensesdict)
     else:
@@ -116,16 +104,16 @@ def word_similarity(resources_dir, gold_file, model_output):
         score = max(similaritylist)
         # print("score ", score)
         simscore.append(score)
-    print(simscore)
-    print(goldscore)
+
     correlation, _ = spearmanr(simscore, goldscore)
     # print(len(simscore), len(goldscore))
-    print(correlation)
+    # print(correlation)
 
-    print("min_count {0}, window {1}, size {2}, sample {3}, alpha {4}, min_alpha {5}, negative {6}, epochs {7}".format(config.min_count, \
-     config.window, config.size, config.sample, config.alpha, config.min_alpha,\
-      config.negative, config.epochs))
+    # print("min_count {0}, window {1}, size {2}, sample {3}, alpha {4}, min_alpha {5}, negative {6}, epochs {7}".format(config.min_count, \
+    #  config.window, config.size, config.sample, config.alpha, config.min_alpha,\
+    #   config.negative, config.epochs))
 
+    return correlation
 
 if __name__ == "__main__":
 
