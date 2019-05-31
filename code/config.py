@@ -28,39 +28,24 @@ w2v_bin_model_output = "modelOutput/model.bin"
 w2v_output_json = "modelOutput/model.json"
 # the text containing the list of lists of senses
 final_txt = "modelOutput/final_text.txt"
-
+# text file saving all the training parameters and correlation
 model_performance = "modelOutput/models_performance.txt"
-
+# final best embeddings file
+final_vec = "modelOutput/embeddings.vec"
 # Word2Vec gensim parameters
-# min_count = 5
-#
-# window    = 5
-#
-# size      = 400
-#
-# sample    = 6e-5
-#
-# alpha     = 0.03
-#
-# min_alpha = 0.0007
-#
-# negative  = 10
-#
-# epochs    = 30
+# words that will be considered following a minimum count in the corpus
+min_count = [5, 10]
+# window of words before and after the predicted word
+window    = [5, 10]
+# embeddings size
+size      = [400, 200]
 
-# Define the grid search parameters
-min_count = [5]
-
-window = [5]
-
-size = [200, 400]
-
-sample    = 6e-5
-
-alpha     = 0.03
-
-min_alpha = 0.0007
-
-negative = [5, 10]
-
-epochs = [20, 30]
+sample    = [0.00006]
+# starting learning rate
+alpha     = [0.03]
+# ending learning rate
+min_alpha = [0.0007]
+# negative sampling
+negative = [10, 5]
+# number of epochs
+epochs = [30]

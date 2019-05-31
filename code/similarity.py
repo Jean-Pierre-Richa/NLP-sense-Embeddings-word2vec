@@ -1,3 +1,4 @@
+# similarity
 import config
 import csv
 import json
@@ -7,19 +8,68 @@ import os
 from scipy.stats import spearmanr
 import argparse
 
+'''
+
+    parse arguments
+
+'''
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("resources_dir", nargs='?', default=config.resources_dir, help="Resources directory path from the root dir")
-    parser.add_argument("gold_file", nargs='?', default=config.tsv_file, help="File containing the gold annotated word similarity")
-    parser.add_argument("model_output", nargs='?', default=config.w2v_model_output, help="model output")
+    parser.add_argument("resources_dir",
+                        nargs='?',
+                        default=config.resources_dir,
+                        help="Resources directory path from the root dir")
+    parser.add_argument("gold_file",
+                        nargs='?',
+                        default=config.tsv_file,
+                        help="File containing the gold annotated word similarity")
+    parser.add_argument("model_output",
+                        nargs='?',
+                        default=config.w2v_model_output,
+                        help="model output")
+    parser.add_argument("only_senses",
+                        nargs='?',
+                        default=True,
+                        help="extract from the model output txt, only the model senses")
+    parser.add_argument("pca_drawing",
+                        nargs='?',
+                        default=True,
+                        help="show vocab")
 
     return parser.parse_args()
 
 
+
+def vocab_pca():
+
+    return
+
+
+def keep_model_senses(model_output):
+
+    senses_embed = []
+    fv = open(os.path.join(args.resources_dir, config.final_vec), "w")
+    with open(model_output, 'r') as mo:
+        senses = mo.readlines()
+        for line in senses:
+            if("_bn:" in line):
+                senses_embed.append(line)
+            else:
+                pass
+    first_line = "{} {}\n".format(str(len(senses_embed)), len(senses_embed[0].split())-1)
+    fv.write(first_line)
+    for sense in senses_embed:
+        fv.write(sense)
+    fv.close()
+
+'''
+
+    load tab seperated values file containing the gold similarity dataset
+
+'''
 def load_tsv(gold_file):
-    # print(gold_file)
-    # print("Loading gold_score file...")
     simlist = []
     with open(gold_file, 'r') as tab_file:
         next(tab_file)
@@ -29,25 +79,28 @@ def load_tsv(gold_file):
             w2 = word2.lower()
             gold_score = word3
             simlist.append([w1, w2, gold_score])
-    # print(simlist)
-
     return simlist
 
-def model_output_to_dict(resources_dir, model_output, gold_file):
+'''
 
-    senses = KeyedVectors.load_word2vec_format(os.path.join(resources_dir, model_output), binary=False)
+    take from the model output file only the vocabulary present in the gold file
+
+'''
+
+def model_output_to_dict(resources_dir, model_output, gold_file):
+    # load the senses from the model output
+    senses = KeyedVectors.load_word2vec_format(os.path.join(resources_dir,
+                                               model_output), binary=False)
     vocab = senses.wv.vocab
-    # print(vocab)
     wanted_senses = load_tsv(os.path.join(resources_dir, gold_file))
-    # print(wanted_senses)
     tab_dict = {}
     print(len(wanted_senses))
+    # create a dictionary containing the model output vocab present in the goldfile
     dict_file = open(os.path.join(resources_dir, config.w2v_output_json), 'w')
     with tqdm(desc="model output to dict", total=len(wanted_senses)) as pbar:
         for senlist in wanted_senses:
             pbar.update(1)
             for sense in senlist:
-                # print(sense)
                 tab_dict[sense] = sense
                 senselist = []
                 try:
@@ -66,8 +119,8 @@ def model_output_to_dict(resources_dir, model_output, gold_file):
 
 def word_similarity(resources_dir, gold_file, model_output):
 
-    print(os.path.join(resources_dir, model_output))
-    model = KeyedVectors.load_word2vec_format(os.path.join(resources_dir, model_output), binary=False)
+    model = KeyedVectors.load_word2vec_format(os.path.join(resources_dir,
+                                              model_output), binary=False)
     similarity_lists = load_tsv(os.path.join(resources_dir, gold_file))
     exists = os.path.isfile(os.path.join(resources_dir, config.w2v_output_json))
     if exists:
@@ -76,10 +129,8 @@ def word_similarity(resources_dir, gold_file, model_output):
     else:
         model_senses = model_output_to_dict(resources_dir, model_output, gold_file)
 
-    counter = 0
     simscore = []
     goldscore = []
-
 
     for list in similarity_lists:
         similaritylist = [-1]
@@ -90,9 +141,7 @@ def word_similarity(resources_dir, gold_file, model_output):
 
         try:
             sense1 = model_senses[word1]
-            # print(sense1)
             sense2 = model_senses[word2]
-            # print(sense1)
         except:
             sense1 = []
             sense2 = []
@@ -102,21 +151,23 @@ def word_similarity(resources_dir, gold_file, model_output):
                 similarity = model.wv.similarity(v1, v2)
                 similaritylist.append(similarity)
         score = max(similaritylist)
-        # print("score ", score)
         simscore.append(score)
 
     correlation, _ = spearmanr(simscore, goldscore)
-    # print(len(simscore), len(goldscore))
-    # print(correlation)
-
-    # print("min_count {0}, window {1}, size {2}, sample {3}, alpha {4}, min_alpha {5}, negative {6}, epochs {7}".format(config.min_count, \
-    #  config.window, config.size, config.sample, config.alpha, config.min_alpha,\
-    #   config.negative, config.epochs))
-
+    # print(simscore)
+    # print(goldscore)
     return correlation
 
 if __name__ == "__main__":
 
     args = parse_args()
 
-    _ = word_similarity(resources_dir=args.resources_dir, gold_file=args.gold_file, model_output=args.model_output)
+    _ = word_similarity(resources_dir=args.resources_dir,
+                        gold_file=args.gold_file,
+                        model_output=args.model_output)
+    if args.only_senses:
+        print("extracting the senses from model output")
+        keep_model_senses(os.path.join(args.resources_dir, config.w2v_best_model_output))
+        model = KeyedVectors.load_word2vec_format(os.path.join(args.resources_dir, config.final_vec), binary=False)
+    else:
+        pass
