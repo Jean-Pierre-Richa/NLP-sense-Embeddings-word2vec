@@ -143,9 +143,9 @@ def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml,
                         for y, w in dictionary[index][key][x].items():
                             if y == "anchor":
                                 if ((' ' + w.lower() + ' ') in txt):
-                                    anchor = str(w).lower()
+                                    anchor = " " + str(w).lower() + " "
                                 else:
-                                    pass
+                                    continue
                             if y == "lemma":
                                 lemma = str(w).lower()
                             if y == "babelNet":

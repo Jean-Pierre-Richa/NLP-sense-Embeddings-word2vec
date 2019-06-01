@@ -7,6 +7,10 @@ from tqdm import tqdm
 import os
 from scipy.stats import spearmanr
 import argparse
+from sklearn.decomposition import PCA
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib import pyplot
 
 '''
 
@@ -33,7 +37,7 @@ def parse_args():
                         nargs='?',
                         default=True,
                         help="extract from the model output txt, only the model senses")
-    parser.add_argument("pca_drawing",
+    parser.add_argument("draw",
                         nargs='?',
                         default=True,
                         help="show vocab")
@@ -42,10 +46,32 @@ def parse_args():
 
 
 
-def vocab_pca():
+def draw_vocab(w2v_model):
 
-    return
+    vocab = w2v_model.wv.vocab
 
+    pca_dict = {}
+
+    for sense in list(vocab)[:80]:
+        pca_dict[sense] = vocab[sense]
+    voc = w2v_model[pca_dict]
+
+    pca = PCA(n_components=2)
+    result = pca.fit_transform(voc)
+
+    pyplot.scatter(result[:, 0], result[:, 1])
+
+    words = list(pca_dict)
+
+    for i, word in enumerate(words):
+    	pyplot.annotate(word.split('_')[0], xy=(result[i, 0], result[i, 1]))
+    pyplot.show()
+
+'''
+
+    extract only the senses of babelNet from the final model output
+
+'''
 
 def keep_model_senses(model_output):
 
@@ -55,6 +81,7 @@ def keep_model_senses(model_output):
         senses = mo.readlines()
         for line in senses:
             if("_bn:" in line):
+                # print(line.split()[0])
                 senses_embed.append(line)
             else:
                 pass
@@ -154,8 +181,9 @@ def word_similarity(resources_dir, gold_file, model_output):
         simscore.append(score)
 
     correlation, _ = spearmanr(simscore, goldscore)
-    # print(simscore)
-    # print(goldscore)
+    print(simscore)
+    print(goldscore)
+    print(correlation)
     return correlation
 
 if __name__ == "__main__":
@@ -168,6 +196,11 @@ if __name__ == "__main__":
     if args.only_senses:
         print("extracting the senses from model output")
         keep_model_senses(os.path.join(args.resources_dir, config.w2v_best_model_output))
-        model = KeyedVectors.load_word2vec_format(os.path.join(args.resources_dir, config.final_vec), binary=False)
+        model_best = KeyedVectors.load_word2vec_format(os.path.join(args.resources_dir, config.final_vec), binary=False)
     else:
         pass
+
+    model = KeyedVectors.load_word2vec_format(os.path.join(args.resources_dir,
+                                                   config.final_vec), binary=False)
+    if args.draw:
+        draw_vocab(model)

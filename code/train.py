@@ -11,6 +11,7 @@ from sklearn.model_selection import ParameterGrid
 import json
 import argparse
 from similarity import word_similarity
+import gensim
 
 '''
 
@@ -30,7 +31,7 @@ def parse_args():
                         help="Name of the json dictionary inside the resources folder")
     parser.add_argument("nb_xml",
                         nargs='?',
-                        default=2,
+                        default=1,
                         help="Number of XML files to be used (high-precision and high-coverage), it can be either 1 or 2")
     parser.add_argument("senseXml1",
                         nargs='?',
@@ -81,6 +82,12 @@ class GridSearch:
         self.grid_params = grid_params
         self.best_correlation = -2
 
+    # def my_rule(word, count, min_count):
+    #     if "_bn:" in word:
+    #         # print(word)
+    #         return gensim.utils.RULE_KEEP
+    #     else:
+    #         return gensim.utils.RULE_DEFAULT
     # Word2Vec Network
     def run_training(self, train_list):
 
@@ -98,6 +105,7 @@ class GridSearch:
                                  min_alpha=p['min_alpha'],
                                  negative=p['negative'],
                                  workers=cores-1,
+                                 hs=1,
                                  compute_loss=True,
                                  callbacks = [progress_bar])
             # building the network vocabulary
@@ -130,7 +138,7 @@ class GridSearch:
                                                   config.w2v_best_model_output), binary=False)
 
             # keep a log of the performances in a txt file
-            performance = "min_count {0}, window {1}, size {2}, sample {3}, alpha {4}, min_alpha {5} negative {6}, epochs {7}, correlation {8} xml files {9}".format(
+            performance = "min_count {0}, window {1}, size {2}, sample {3}, alpha {4}, min_alpha {5}, negative {6}, epochs {7}, correlation {8}, xml files {9}".format(
             p['min_count'], p['window'], p['size'], p['sample'], p['alpha'], p['min_alpha'], p['negative'], p['epochs'], \
             correlation, args.nb_xml)
 
@@ -143,30 +151,31 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    try:
-        exists = os.path.isfile(os.path.join(config.resources_dir, config.final_txt))
-        # load the final converted text containing the list of lists for the
-        # training if it already exists
-        if exists:
-            fileinfo = os.stat(os.path.join(config.resources_dir, config.final_txt))
-            if fileinfo.st_size > 950000:
-                # print("jp2")
-                print("final text file already exists loading it from %s..."\
-                      %os.path.join(config.resources_dir, config.final_txt).split("/")[-1])
-                with open(os.path.join(config.resources_dir, config.final_txt),'r') as txtfile:
-                    training_list = json.load(txtfile)
-
-        # else create it
-        else:
-            training_list = create_dataset(resources_dir=args.resources_dir,
-            annotation_dict=args.annotation_dict, senseXml1=args.senseXml1,
-            senseXml2=args.senseXml2, nb_xml=args.nb_xml,
-            bn2wn_mapping_txt=args.bn2wn_mapping_txt)
-    except:
-        training_list = create_dataset(resources_dir=args.resources_dir,
-        annotation_dict=args.annotation_dict, senseXml1=args.senseXml1,
-        senseXml2=args.senseXml2, nb_xml=args.nb_xml,
-        bn2wn_mapping_txt=args.bn2wn_mapping_txt)
+    # try:
+    #     exists = os.path.isfile(os.path.join(config.resources_dir, config.final_txt))
+    #     # load the final converted text containing the list of lists for the
+    #     # training if it already exists
+    #     if exists:
+    #         fileinfo = os.stat(os.path.join(config.resources_dir, config.final_txt))
+    #         if fileinfo.st_size > 950000:
+    #             # print("jp2")
+    #             print("final text file already exists loading it from %s..."\
+    #                   %os.path.join(config.resources_dir, config.final_txt).split("/")[-1])
+    #             with open(os.path.join(config.resources_dir, config.final_txt),'r') as txtfile:
+    #                 training_list = json.load(txtfile)
+    #
+    #     # else create it
+    #     else:
+    #         training_list = create_dataset(resources_dir=args.resources_dir,
+    #         annotation_dict=args.annotation_dict, senseXml1=args.senseXml1,
+    #         senseXml2=args.senseXml2, nb_xml=args.nb_xml,
+    #         bn2wn_mapping_txt=args.bn2wn_mapping_txt)
+    # except:
+    training_list = create_dataset(resources_dir=args.resources_dir,
+                                   annotation_dict=args.annotation_dict,
+                                   senseXml1=args.senseXml1,
+                                   senseXml2=args.senseXml2, nb_xml=args.nb_xml,
+                                   bn2wn_mapping_txt=args.bn2wn_mapping_txt)
 
     # create a dict containing the grid search parameters
     grid_params = {'min_count':config.min_count,

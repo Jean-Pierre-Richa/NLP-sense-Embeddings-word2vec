@@ -31,21 +31,21 @@ final_txt = "modelOutput/final_text.txt"
 # text file saving all the training parameters and correlation
 model_performance = "modelOutput/models_performance.txt"
 # final best embeddings file
-final_vec = "modelOutput/embeddings.vec"
+final_vec = "modelOutput/embeddings.txt"
 # Word2Vec gensim parameters
 # words that will be considered following a minimum count in the corpus
 min_count = [5, 10]
 # window of words before and after the predicted word
-window    = [5, 10]
+window    = [10, 5]
 # embeddings size
 size      = [400, 200]
 
-sample    = [0.00006]
+sample    = [0.00006, 0.00001]
 # starting learning rate
-alpha     = [0.03]
+alpha     = [0.03, 0.01]
 # ending learning rate
-min_alpha = [0.0007]
+min_alpha = [0.0007, 0.0002]
 # negative sampling
-negative = [10, 5]
+negative = [10, 10]
 # number of epochs
-epochs = [30]
+epochs = [30, 20]
