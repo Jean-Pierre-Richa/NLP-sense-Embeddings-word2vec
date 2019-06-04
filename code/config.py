@@ -9,7 +9,6 @@ root_dir = os.path.join(cwd, '../')
 resources_dir = os.path.join(root_dir, "resources/")
 # XML files
 senseXml1 = 'EuroSense/eurosense.v1.0.high-coverage.xml'
-senseXml2 = 'EuroSense-2/eurosense.v1.0.high-precision.xml'
 # the dictionary that will hold the data after preprocessing the XML files
 annotation_dict = 'annotations.json'
 # the file that contains the mapping between wordnet and babelNet
@@ -34,18 +33,18 @@ model_performance = "modelOutput/models_performance.txt"
 final_vec = "modelOutput/embeddings.txt"
 # Word2Vec gensim parameters
 # words that will be considered following a minimum count in the corpus
-min_count = [5, 10]
+min_count = [5]
 # window of words before and after the predicted word
-window    = [10, 5]
+window    = [10]
 # embeddings size
-size      = [400, 200]
+size      = [200]
 
-sample    = [0.00006, 0.00001]
+sample    = [0.00003]
 # starting learning rate
-alpha     = [0.03, 0.01]
+alpha     = [0.03]
 # ending learning rate
-min_alpha = [0.0007, 0.0002]
+min_alpha = [0.0007]
 # negative sampling
-negative = [10, 10]
+negative = [10]
 # number of epochs
-epochs = [30, 20]
+epochs = [30]

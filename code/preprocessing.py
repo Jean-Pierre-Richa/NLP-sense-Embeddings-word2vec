@@ -99,7 +99,7 @@ def load_txt_to_dict(bn2wn_mapping_txt):
 
 '''
 
-def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml, bn2wn_mapping_txt):
+def create_dataset(resources_dir, annotation_dict, senseXml1, bn2wn_mapping_txt):
 
     annotation_dict = os.path.join(resources_dir, config.annotation_dict)
     exists = os.path.isfile(annotation_dict)
@@ -112,9 +112,6 @@ def create_dataset(resources_dir, annotation_dict, senseXml1, senseXml2, nb_xml,
     else:
         print("parsing xml file 1")
         parse_dict(os.path.join(resources_dir, senseXml1), 'w')
-        if nb_xml == 2:
-            print("parsing xml file 2")
-            parse_dict(os.path.join(resources_dir, senseXml2), 'a')
     # load the annotation json into a dict
     dictionary = jsonToDict(annotation_dict)
     # load the mapping txt into a dict

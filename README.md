@@ -1,16 +1,16 @@
-## Submission skeleton
-```
-- code               # put your training and evaluation code here
-- resources
-  |__ embeddings.vec # substitute this file with your embeddings
-- README.md          # this file
-- Homework_2_nlp.pdf # the slides presenting this homework
-- report.pdf         # your report
-```
-## Instructions
-- Download EuroSense from http://lcl.uniroma1.it/eurosense/ . 
+# Sense Embeddings
+
+## This project was done to learn sense embeddings instead of word embeddings, a full description can be found in the report
+
+# Instructions
+- Download EuroSense from http://lcl.uniroma1.it/eurosense/ .
 - Download WordSimilarity-353 from http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/ .
-- Please don't upload Eurosense or any other training corpora you may use to your repo!
-- Place all your code in the `code` folder.
-- Place your report as `report.pdf` in the root folder.
-- Follow the slides for any additional information.
+
+# Running the code
+- python train.py will execute the preprocessing to build the dictionary, train the network and test the correlation between the gold dataset and the learned embeddings from the model output.
+
+- Check python train.py -h for more info about the arguments that can be used 
+
+- python similarity.py can be executed independently to test the correlation and draw the senses vectors on a 2d plane using PCA for dimensionality reduction.
+
+- Check python similarity.py -h for more info about the arguments that can be used (e.g., python similarity.py --draw False)

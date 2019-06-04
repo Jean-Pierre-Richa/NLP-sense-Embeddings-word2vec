@@ -17,30 +17,42 @@ from matplotlib import pyplot
     parse arguments
 
 '''
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 def parse_args():
+
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("resources_dir",
+    parser.add_argument("--resources_dir",
                         nargs='?',
                         default=config.resources_dir,
                         help="Resources directory path from the root dir")
-    parser.add_argument("gold_file",
+    parser.add_argument("--gold_file",
                         nargs='?',
                         default=config.tsv_file,
-                        help="File containing the gold annotated word similarity")
-    parser.add_argument("model_output",
+                        help="File containing the gold annotated word similarity (directory path from the resources_dir)")
+    parser.add_argument("--model_output",
                         nargs='?',
                         default=config.w2v_model_output,
-                        help="model output")
-    parser.add_argument("only_senses",
+                        help="model output (directory path from the resources_dir)")
+    parser.add_argument("--only_senses",
+                        type=str2bool,
                         nargs='?',
                         default=True,
-                        help="extract from the model output txt, only the model senses")
-    parser.add_argument("draw",
+                        help="extract from the model output txt, only the model senses (can be True or False)")
+    parser.add_argument("--draw",
+                        type=str2bool,
                         nargs='?',
                         default=True,
-                        help="show vocab")
+                        help="show vocab (can be True or False)")
 
     return parser.parse_args()
 
@@ -52,7 +64,7 @@ def draw_vocab(w2v_model):
 
     pca_dict = {}
 
-    for sense in list(vocab)[:80]:
+    for sense in list(vocab)[:50]:
         pca_dict[sense] = vocab[sense]
     voc = w2v_model[pca_dict]
 
@@ -181,8 +193,6 @@ def word_similarity(resources_dir, gold_file, model_output):
         simscore.append(score)
 
     correlation, _ = spearmanr(simscore, goldscore)
-    print(simscore)
-    print(goldscore)
     print(correlation)
     return correlation
 
