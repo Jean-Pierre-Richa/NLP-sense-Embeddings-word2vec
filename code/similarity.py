@@ -17,6 +17,7 @@ from matplotlib import pyplot
     parse arguments
 
 '''
+# mapping to use booleans in the ArgumentParser
 def str2bool(v):
     if isinstance(v, bool):
        return v
@@ -47,17 +48,21 @@ def parse_args():
                         type=str2bool,
                         nargs='?',
                         default=True,
-                        help="extract from the model output txt, only the model senses (can be True or False)")
+                        help="extract from the model output txt only the model senses (can be True or False)")
     parser.add_argument("--draw",
                         type=str2bool,
                         nargs='?',
                         default=True,
-                        help="show vocab (can be True or False)")
+                        help="plot vocab (can be True or False)")
 
     return parser.parse_args()
 
 
+'''
 
+    function to draw the vocabulary using PCA for dimensionality reduction
+
+'''
 def draw_vocab(w2v_model):
 
     vocab = w2v_model.wv.vocab
@@ -156,21 +161,33 @@ def model_output_to_dict(resources_dir, model_output, gold_file):
 
     return tab_dict
 
-def word_similarity(resources_dir, gold_file, model_output):
+'''
 
+    check word similarities from the model output and the gold dataset and perform the spearman correlation
+
+'''
+
+def word_similarity(resources_dir, gold_file, model_output):
+    # load the model output
     model = KeyedVectors.load_word2vec_format(os.path.join(resources_dir,
                                               model_output), binary=False)
+    # load the gold dataset
     similarity_lists = load_tsv(os.path.join(resources_dir, gold_file))
+    # output dictionary
     exists = os.path.isfile(os.path.join(resources_dir, config.w2v_output_json))
+    # load it if it exists
     if exists:
         with open(os.path.join(resources_dir, config.w2v_output_json)) as sensesdict:
             model_senses = json.load(sensesdict)
     else:
+        # otherwise, create it
         model_senses = model_output_to_dict(resources_dir, model_output, gold_file)
-
+    # will hold the model output similarity score
     simscore = []
+    # will hold the gold dataset score
     goldscore = []
-
+    # take only the words in the gold dataset to search for their respective
+    # senses in the model outut and create a list of lists for each one
     for list in similarity_lists:
         similaritylist = [-1]
         word1 = list[0]
@@ -199,17 +216,19 @@ def word_similarity(resources_dir, gold_file, model_output):
 if __name__ == "__main__":
 
     args = parse_args()
-
+    # read the arguments and call the word_similarity function
     _ = word_similarity(resources_dir=args.resources_dir,
                         gold_file=args.gold_file,
                         model_output=args.model_output)
+    # if only the senses are required, then take the model output embeddings and
+    # extract only the babelNet senses
     if args.only_senses:
         print("extracting the senses from model output")
-        keep_model_senses(os.path.join(args.resources_dir, config.w2v_best_model_output))
+        keep_model_senses(os.path.join(args.resources_dir, config.w2v_model_output))
         model_best = KeyedVectors.load_word2vec_format(os.path.join(args.resources_dir, config.final_vec), binary=False)
     else:
         pass
-
+    # test that the saved (senses only) file respects the word2vec format
     model = KeyedVectors.load_word2vec_format(os.path.join(args.resources_dir,
                                                    config.final_vec), binary=False)
     if args.draw:

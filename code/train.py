@@ -33,15 +33,15 @@ def parse_args():
                         nargs='?',
                         default=config.senseXml1,
                         help="Path to the first xml file")
-    parser.add_argument("bn2wn_mapping_txt",
+    parser.add_argument("--bn2wn_mapping_txt",
                         nargs='?',
                         default=config.bn2wn_mapping_txt,
                         help="Name of the txt file that maps wordnet to babelnet senses")
-    parser.add_argument("gold_file",
+    parser.add_argument("--gold_file",
                         nargs='?',
                         default=config.tsv_file,
                         help="File containing the gold annotated word similarity")
-    parser.add_argument("model_output",
+    parser.add_argument("--model_output",
                         nargs='?',
                         default=config.w2v_model_output,
                         help="model output")
